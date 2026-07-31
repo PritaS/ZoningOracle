@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Zoning Oracle | Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f9ff; /* Premium pale blue background */
+        }
+        
+        /* Subtle premium grid background matching the blue theme */
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #dbeafe 1px, transparent 1px),
+                              linear-gradient(to bottom, #dbeafe 1px, transparent 1px);
+            background-size: 4rem 4rem;
+            background-position: center center;
+            mask-image: linear-gradient(to bottom, white 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, white 40%, transparent 100%);
+        }
+
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(8px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Refined focus rings for a premium feel */
+        .input-ring:focus-within {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0f172a;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen flex flex-col text-slate-900">
+
+    <!-- Background Grid -->
+    <div class="absolute inset-0 z-0 bg-grid-pattern opacity-[0.4] pointer-events-none"></div>
+
+    <!-- Top Navigation -->
+    <nav class="relative z-10 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer">
+                    <div class="h-8 w-8 bg-slate-900 rounded-lg flex items-center justify-center mr-2 shadow-sm">
+                        <i data-lucide="layers" class="h-4 w-4 text-white"></i>
+                    </div>
+                    <span class="font-bold text-lg tracking-tight">ZoningOracle<span class="text-indigo-600">.</span></span>
+                </div>
+                <!-- Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Solutions</a>
+                    <a href="#" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">API Docs</a>
+                    <a href="#" class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Pricing</a>
+                </div>
+                <!-- Auth -->
+                <div class="flex items-center space-x-4">
+                    <span class="hidden sm:inline-block text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
+                        3 Free Searches Left
+                    </span>
+                    <button class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors hidden sm:block">Log in</button>
+                    <button class="text-sm font-semibold bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 shadow-sm transition-all active:scale-95">Upgrade</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 flex-grow flex flex-col items-center pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl w-full space-y-10">
+            
+            <!-- Hero Section -->
+            <div class="text-center space-y-5">
+                <!-- Trust Badge -->
+                <div class="inline-flex items-center space-x-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm mb-2">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Live Municipal Data Connection</span>
+                </div>
+                
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    Instant Zoning & <br class="hidden sm:block" /> ADU Feasibility
+                </h1>
+                <p class="max-w-2xl mx-auto text-lg text-slate-500 font-medium">
+                    Enter any parcel address to instantly retrieve verified density limits, setbacks, and local ADU ordinances.
+                </p>
+            </div>
+
+            <!-- Search Form Card -->
+            <div class="bg-white/70 backdrop-blur-xl p-2 rounded-2xl shadow-xl shadow-slate-200/50 border border-white">
+                <div class="bg-white p-6 sm:p-8 rounded-xl border border-slate-100 shadow-sm">
+                    <form id="zoning-form" class="space-y-6">
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-4">
+                            <!-- Address Input -->
+                            <div class="sm:col-span-3">
+                                <label for="address" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Property Address</label>
+                                <div class="relative rounded-lg input-ring transition-shadow border border-slate-300 bg-white group">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <i data-lucide="search" class="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                                    </div>
+                                    <input type="text" name="address" id="address" class="block w-full rounded-lg pl-11 pr-4 py-3.5 text-slate-900 font-medium focus:outline-none sm:text-sm bg-transparent placeholder-slate-400" placeholder="e.g. 123 Main St, San Diego, CA" required>
+                                </div>
+                            </div>
+                            
+                            <!-- County Dropdown -->
+                            <div class="sm:col-span-1">
+                                <label for="county" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Region</label>
+                                <div class="relative rounded-lg input-ring transition-shadow border border-slate-300 bg-white">
+                                    <select id="county" name="county" class="block w-full rounded-lg pl-3 pr-10 py-3.5 text-slate-900 font-medium focus:outline-none sm:text-sm bg-transparent appearance-none cursor-pointer">
+                                        <option>San Diego</option>
+                                        <option>Los Angeles</option>
+                                        <option>Orange</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-lucide="chevron-down" class="h-4 w-4 text-slate-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all active:scale-[0.99]">
+                            Run Analysis
+                            <i data-lucide="arrow-right" class="h-4 w-4 ml-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden flex flex-col items-center justify-center py-16">
+                <div class="relative flex justify-center items-center mb-6">
+                    <div class="absolute animate-ping h-12 w-12 rounded-full bg-indigo-100 opacity-75"></div>
+                    <div class="relative h-12 w-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shadow-sm">
+                        <i data-lucide="loader-2" class="h-6 w-6 text-indigo-600 animate-spin"></i>
+                    </div>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-1">Analyzing Property</h3>
+                <p class="text-sm text-slate-500 font-medium" id="loading-text">Connecting to municipal database...</p>
+            </div>
+
+            <!-- Results Dashboard -->
+            <div id="results-dashboard" class="hidden fade-in space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 tracking-tight">Oracle Report</h2>
+                        <p class="text-sm text-slate-500 font-medium mt-1 flex items-center">
+                            <i data-lucide="map-pin" class="h-3.5 w-3.5 mr-1"></i>
+                            <span id="display-address"></span>
+                        </p>
+                    </div>
+                    <button class="text-xs font-semibold bg-white border border-slate-200 shadow-sm px-3 py-1.5 rounded-md hover:bg-slate-50 transition-colors flex items-center text-slate-600">
+                        <i data-lucide="download" class="h-3.5 w-3.5 mr-1.5"></i> Export
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <!-- Card 1: Zoning -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <i data-lucide="map" class="h-12 w-12 text-indigo-600"></i>
+                        </div>
+                        <dt class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Zoning Code</dt>
+                        <dd class="text-2xl font-extrabold text-slate-900" id="res-zoning">---</dd>
+                    </div>
+
+                    <!-- Card 2: Max Units -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <i data-lucide="home" class="h-12 w-12 text-slate-900"></i>
+                        </div>
+                        <dt class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Max Units</dt>
+                        <dd class="text-2xl font-extrabold text-slate-900" id="res-units">---</dd>
+                    </div>
+
+                    <!-- Card 3: ADU (Highlight) -->
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-20">
+                            <i data-lucide="check-circle-2" class="h-12 w-12 text-emerald-600"></i>
+                        </div>
+                        <dt class="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">ADU Eligibility</dt>
+                        <dd class="text-2xl font-extrabold text-emerald-700" id="res-adu">---</dd>
+                    </div>
+
+                    <!-- Card 4: Setbacks -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <i data-lucide="ruler" class="h-12 w-12 text-slate-900"></i>
+                        </div>
+                        <dt class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Setbacks (F/R/S)</dt>
+                        <dd class="text-xl font-extrabold text-slate-900 mt-1" id="res-setbacks">---</dd>
+                    </div>
+                </div>
+                
+                <div class="text-center pt-6">
+                     <button type="button" onclick="resetForm()" class="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors underline underline-offset-4 decoration-slate-300 hover:decoration-slate-900">
+                        Start New Search
+                     </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+
+        const form = document.getElementById('zoning-form');
+        const loadingState = document.getElementById('loading-state');
+        const loadingText = document.getElementById('loading-text');
+        const dashboard = document.getElementById('results-dashboard');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Dynamic text to make the loading state feel like real work is happening
+        const loadingPhrases = [
+            "Connecting to municipal database...",
+            "Locating parcel boundaries...",
+            "Extracting density and setback rules...",
+            "Formatting Oracle report..."
+        ];
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const address = document.getElementById('address').value;
+            const county = document.getElementById('county').value;
+
+            // Update UI to loading
+            dashboard.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            submitBtn.innerHTML = `Processing...`;
+
+            // Cycle loading text
+            let phraseIndex = 0;
+            const textInterval = setInterval(() => {
+                phraseIndex = (phraseIndex + 1) % loadingPhrases.length;
+                loadingText.textContent = loadingPhrases[phraseIndex];
+            }, 600);
+
+            // =========================================================================
+            // ACTIONFORGE INTEGRATION POINT (Kept intact for deployment)
+            // =========================================================================
+            /*
+            try {
+                const response = await fetch('/api/zoning', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: address, county: county })
+                });
+                
+                if (!response.ok) throw new Error('API Request Failed');
+                
+                const data = await response.json();
+                
+                document.getElementById('res-zoning').textContent = data.result.zoning_code;
+                document.getElementById('res-units').textContent = data.result.max_units_allowed + ' Units';
+                document.getElementById('res-adu').textContent = data.result.adu_permitted ? 'Permitted' : 'Restricted';
+                document.getElementById('res-setbacks').textContent = 
+                    `${data.result.setback_requirements.front_ft}' / ${data.result.setback_requirements.rear_ft}' / ${data.result.setback_requirements.side_ft}'`;
+            } catch (error) {
+                alert("Error fetching zoning data: " + error.message);
+            }
+            */
+
+            // =========================================================================
+            // MOCK DELAY (Remove when API is connected)
+            // =========================================================================
+            await new Promise(resolve => setTimeout(resolve, 2400)); // 2.4s delay to show off the UI
+            
+            // Mock Data mapping
+            document.getElementById('res-zoning').textContent = 'RM-2-5';
+            document.getElementById('res-units').textContent = '4 Units';
+            document.getElementById('res-adu').textContent = 'Permitted';
+            document.getElementById('res-setbacks').textContent = "15' / 10' / 5'";
+            // =========================================================================
+
+            clearInterval(textInterval);
+
+            // Update UI to success
+            document.getElementById('display-address').textContent = `${address}, ${county}`;
+            loadingState.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            
+            // Reset Button
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            submitBtn.innerHTML = `Run Analysis <i data-lucide="arrow-right" class="h-4 w-4 ml-2"></i>`;
+            lucide.createIcons();
+        });
+
+        function resetForm() {
+            form.reset();
+            dashboard.classList.add('hidden');
+            document.getElementById('address').focus();
+        }
+    </script>
+</body>
+</html>
