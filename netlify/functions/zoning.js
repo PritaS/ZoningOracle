@@ -1,70 +1,39 @@
-/*
-  This is the Netlify Serverless Function.
-  Place this file in your project at: netlify/functions/zoning.js
-*/
+const reply = (statusCode, data) => ({
+  statusCode,
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data),
+});
 
-exports.handler = async function(event, context) {
-  // 1. Only allow POST requests
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+exports.handler = async function(event) {
+  if (event.httpMethod !== 'POST') return reply(405, { error: 'Method not allowed' });
+  let body;
+  try { body = JSON.parse(event.body); }
+  catch { return reply(400, { error: 'Invalid JSON' }); }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return reply(400, { error: 'Invalid request' });
+  const { address, county } = body;
+  if (typeof address !== 'string' || address.trim().length < 3 || address.length > 300 ||
+      typeof county !== 'string' || county.trim().length < 2 || county.length > 100) {
+    return reply(400, { error: 'Provide a valid address and county' });
   }
-
+  const toolId = process.env.ACTIONFORGE_TOOL_ID;
+  const key = process.env.ACTIONFORGE_KEY;
+  if (!toolId || !/^[A-Za-z0-9_-]+$/.test(toolId) || toolId === 'YOUR_TOOL_ID_HERE' || !key) {
+    return reply(503, { error: 'Zoning service is not configured' });
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
   try {
-    // Netlify passes the body as a string, so we must parse it
-    const body = JSON.parse(event.body);
-    const { address, county } = body;
-
-    // 2. Your specific ActionForge Tool ID 
-    const ACTIONFORGE_TOOL_ID = "YOUR_TOOL_ID_HERE"; 
-    
-    // 3. Your ActionForge Proxy URL
-    const ACTIONFORGE_URL = `https://api.actionforge.com/api/invoke/${ACTIONFORGE_TOOL_ID}`;
-
-    // 4. Send the request to ActionForge securely
-    const actionForgeResponse = await fetch(ACTIONFORGE_URL, {
-      method: "POST",
-      headers: {
-        // Pulls your secret key from your Netlify dashboard settings
-        "Authorization": `Bearer ${process.env.ACTIONFORGE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        address: address,
-        county: county
-      })
+    const response = await fetch(`https://api.actionforge.com/api/invoke/${encodeURIComponent(toolId)}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: address.trim(), county: county.trim() }),
+      signal: controller.signal,
     });
-
-    // 5. Handle ActionForge errors
-    if (!actionForgeResponse.ok) {
-      const errorText = await actionForgeResponse.text();
-      return {
-        statusCode: actionForgeResponse.status,
-        body: JSON.stringify({ 
-          error: `ActionForge Error: ${actionForgeResponse.status}`, 
-          details: errorText 
-        })
-      };
-    }
-
-    const data = await actionForgeResponse.json();
-
-    // 6. Send the validated output schema back to your frontend website
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    };
-
+    if (!response.ok) return reply(502, { error: 'Zoning provider request failed' });
+    return reply(200, await response.json());
   } catch (error) {
-    console.error("Proxy Error:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Internal Server Error" })
-    };
+    return reply(error.name === 'AbortError' ? 504 : 502, { error: 'Zoning provider unavailable' });
+  } finally {
+    clearTimeout(timer);
   }
-}
+};
